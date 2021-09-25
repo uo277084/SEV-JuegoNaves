@@ -8,6 +8,14 @@ Player::Player(float x, float y, Game* game)
 	fileWidth = 50;
 }
 
+Player::Player(string filename, float x, float y, Game* game)
+	: Actor(filename, x, y, 50, 57, game) {
+
+	audioShoot = new Audio("res/efecto_disparo.wav", false);
+	// lo que mide la imagen
+	fileWidth = 50;
+}
+
 void Player::update() {
 	if (shootTime > 0) {
 		shootTime--;

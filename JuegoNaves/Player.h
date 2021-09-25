@@ -8,6 +8,7 @@ class Player : public Actor
 {
 public:
 	Player(float x, float y, Game* game);
+	Player(string filename, float x, float y, Game* game);
 	Projectile* shoot();
 	void update();
 	void moveX(float axis);

@@ -1,4 +1,4 @@
-#include "GameLayer.h"
+ #include "GameLayer.h"
 
 GameLayer::GameLayer(Game* game)
 	: Layer(game) {
@@ -14,13 +14,22 @@ void GameLayer::init() {
 	textPoints = new Text("0", WIDTH * 0.92, HEIGHT * 0.04, game);
 	textPoints->content = to_string(points);
 
+	points2 = 0;
+	textPoints2 = new Text("0", WIDTH * 0.92, HEIGHT * 0.04, game);
+	textPoints2->content = to_string(points2);
+
 	player = new Player(50, 50, game);
 	background = new Background("res/fondo.png", WIDTH * 0.5, HEIGHT * 0.5, -1, game);
 	backgroundPoints = new Actor("res/icono_puntos.png",
 		WIDTH * 0.85, HEIGHT * 0.05, 24, 24, game);
 
+	player2 = new Player("res/nave2.png", 50, 200, game);
+	backgroundPoints2 = new Actor("res/icono_puntos.png",
+		WIDTH * 0.85, HEIGHT * 0.05, 24, 24, game);
+
 
 	projectiles.clear(); // Vaciar por si reiniciamos el juego
+	projectiles2.clear();
 
 	enemies.clear(); // Vaciar por si reiniciamos el juego
 	enemies.push_back(new Enemy(300, 50, game));
@@ -41,7 +50,14 @@ void GameLayer::processControls() {
 			projectiles.push_back(newProjectile);
 		}
 	}
+	if (controlShoot2) {
+		Projectile* newProjectile2 = player2->shoot();
+		if (newProjectile2 != NULL) {
+			projectiles2.push_back(newProjectile2);
+		}
+	}
 
+	//Jugador 1
 	// Eje X
 	if (controlMoveX > 0) {
 		player->moveX(1);
@@ -63,6 +79,29 @@ void GameLayer::processControls() {
 	else {
 		player->moveY(0);
 	}
+
+	//Jugador 2
+	// Eje X
+	if (controlMoveX2 > 0) {
+		player2->moveX(1);
+	}
+	else if (controlMoveX2 < 0) {
+		player2->moveX(-1);
+	}
+	else {
+		player2->moveX(0);
+	}
+
+	// Eje Y
+	if (controlMoveY2 > 0) {
+		player2->moveY(1);
+	}
+	else if (controlMoveY2 < 0) {
+		player2->moveY(-1);
+	}
+	else {
+		player2->moveY(0);
+	}
 }
 
 void GameLayer::keysToControls(SDL_Event event) {
@@ -70,6 +109,8 @@ void GameLayer::keysToControls(SDL_Event event) {
 		int code = event.key.keysym.sym;
 		// Pulsada
 		switch (code) {
+			
+		//Jugador 1
 		case SDLK_ESCAPE:
 			game->loopActive = false;
 			break;
@@ -90,6 +131,23 @@ void GameLayer::keysToControls(SDL_Event event) {
 			break;
 		case SDLK_SPACE: // dispara
 			controlShoot = true;
+			break;
+
+		//Jugador 2
+		case SDLK_RIGHT: // derecha
+			controlMoveX2 = 1;
+			break;
+		case SDLK_LEFT: // izquierda
+			controlMoveX2 = -1;
+			break;
+		case SDLK_UP: // arriba
+			controlMoveY2 = -1;
+			break;
+		case SDLK_DOWN: // abajo
+			controlMoveY2 = 1;
+			break;
+		case SDLK_p: // dispara
+			controlShoot2 = true;
 			break;
 		}
 	}
@@ -120,6 +178,29 @@ void GameLayer::keysToControls(SDL_Event event) {
 		case SDLK_SPACE: // dispara
 			controlShoot = false;
 			break;
+		case SDLK_RIGHT: // derecha
+			if (controlMoveX2 == 1) {
+				controlMoveX2 = 0;
+			}
+			break;
+		case SDLK_LEFT: // izquierda
+			if (controlMoveX2 == -1) {
+				controlMoveX2 = 0;
+			}
+			break;
+		case SDLK_UP: // arriba
+			if (controlMoveY2 == -1) {
+				controlMoveY2 = 0;
+			}
+			break;
+		case SDLK_DOWN: // abajo
+			if (controlMoveY2 == 1) {
+				controlMoveY2 = 0;
+			}
+			break;
+		case SDLK_p: // dispara
+			controlShoot2 = false;
+			break;
 		}
 	}
 }
@@ -137,6 +218,7 @@ void GameLayer::update() {
 	}
 
 	player->update();
+	player2->update();
 	for (auto const& enemy : enemies) {
 		enemy->update();
 	}
@@ -145,9 +227,21 @@ void GameLayer::update() {
 		projectile->update();
 	}
 
+	for (auto const& projectile2 : projectiles2) {
+		projectile2->update();
+	}
+
 	// Colisiones
 	for (auto const& enemy : enemies) {
 		if (player->isOverlap(enemy)) {
+			init();
+			return; // Cortar el for
+		}
+	}
+
+	// Colisiones
+	for (auto const& enemy : enemies) {
+		if (player2->isOverlap(enemy)) {
 			init();
 			return; // Cortar el for
 		}
@@ -217,7 +311,12 @@ void GameLayer::draw() {
 		projectile->draw();
 	}
 
+	for (auto const& projectile2 : projectiles2) {
+		projectile2->draw();
+	}
+
 	player->draw();
+	player2->draw();
 
 	for (auto const& enemy : enemies) {
 		enemy->draw();
