@@ -11,7 +11,7 @@ void GameLayer::init() {
 	audioBackground->play();
 
 	points = 0;
-	textPoints = new Text("0", WIDTH * 0.92, HEIGHT * 0.04, game);
+	textPoints = new Text("0", WIDTH * 0.72, HEIGHT * 0.04, game);
 	textPoints->content = to_string(points);
 
 	points2 = 0;
@@ -25,7 +25,7 @@ void GameLayer::init() {
 
 	player2 = new Player("res/nave2.png", 50, 200, game);
 	backgroundPoints2 = new Actor("res/icono_puntos.png",
-		WIDTH * 0.85, HEIGHT * 0.05, 24, 24, game);
+		WIDTH * 0.65, HEIGHT * 0.05, 24, 24, game);
 
 
 	projectiles.clear(); // Vaciar por si reiniciamos el juego
@@ -232,6 +232,7 @@ void GameLayer::update() {
 	}
 
 	// Colisiones
+	//Jugador 1
 	for (auto const& enemy : enemies) {
 		if (player->isOverlap(enemy)) {
 			init();
@@ -239,7 +240,7 @@ void GameLayer::update() {
 		}
 	}
 
-	// Colisiones
+	//Jugador 2
 	for (auto const& enemy : enemies) {
 		if (player2->isOverlap(enemy)) {
 			init();
@@ -251,8 +252,10 @@ void GameLayer::update() {
 
 	list<Enemy*> deleteEnemies;
 	list<Projectile*> deleteProjectiles;
+	list<Projectile*> deleteProjectiles2;
 	
 	for (auto const& enemy : enemies) {
+		//Jugador 1
 		for (auto const& projectile : projectiles) {
 			if (enemy->isOverlap(projectile)) {
 				bool pInList = std::find(deleteProjectiles.begin(),
@@ -274,6 +277,29 @@ void GameLayer::update() {
 				textPoints->content = to_string(points);
 			}
 		}
+
+		//Jugador 2
+		for (auto const& projectile2 : projectiles2) {
+			if (enemy->isOverlap(projectile2)) {
+				bool pInList = std::find(deleteProjectiles2.begin(),
+					deleteProjectiles2.end(),
+					projectile2) != deleteProjectiles2.end();
+
+				if (!pInList) {
+					deleteProjectiles2.push_back(projectile2);
+				}
+
+				bool eInList = std::find(deleteEnemies.begin(),
+					deleteEnemies.end(),
+					enemy) != deleteEnemies.end();
+
+				if (!eInList) {
+					deleteEnemies.push_back(enemy);
+				}
+				points2++;
+				textPoints2->content = to_string(points2);
+			}
+		}
 	}
 
 	for (auto const& delEnemy : deleteEnemies) {
@@ -285,6 +311,11 @@ void GameLayer::update() {
 		projectiles.remove(delProjectile);
 	}
 	deleteProjectiles.clear();
+
+	for (auto const& delProjectile2 : deleteProjectiles2) {
+		projectiles2.remove(delProjectile2);
+	}
+	deleteProjectiles2.clear();
 
 	cout << "update GameLayer" << endl;
 	
@@ -324,6 +355,8 @@ void GameLayer::draw() {
 
 	textPoints->draw();
 	backgroundPoints->draw();
+	textPoints2->draw();
+	backgroundPoints2->draw();
 
 	SDL_RenderPresent(game->renderer); // Renderiza
 }
