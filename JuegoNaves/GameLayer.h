@@ -28,6 +28,11 @@ public:
 	Audio* audioBackground;
 	Text* textPoints;
 	int points;
+
+	Actor* backgroundLive;
+	Text* playerLive;
+	int live;
+
 	bool controlShoot = false;
 	int controlMoveY = 0;
 	int controlMoveX = 0;

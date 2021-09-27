@@ -6,8 +6,6 @@ Player::Player(float x, float y, Game* game)
 	audioShoot = new Audio("res/efecto_disparo.wav", false);
 	// lo que mide la imagen
 	fileWidth = 50;
-	//Vidas iniciales del jugador
-	live = 3;
 }
 
 void Player::update() {
@@ -55,12 +53,4 @@ Projectile* Player::shoot() {
 	else {
 		return NULL;
 	}
-}
-
-void Player::shooted() {
-	live--;
-}
-
-int Player::getLive() {
-	return live;
 }

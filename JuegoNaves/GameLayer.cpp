@@ -14,11 +14,17 @@ void GameLayer::init() {
 	textPoints = new Text("0", WIDTH * 0.92, HEIGHT * 0.04, game);
 	textPoints->content = to_string(points);
 
+	live = 3;
+	playerLive = new Text("3", WIDTH * 0.72, HEIGHT * 0.04, game);
+	playerLive->content = to_string(live);
+
 	player = new Player(50, 50, game);
 	background = new Background("res/fondo.png", WIDTH * 0.5, HEIGHT * 0.5, -1, game);
 	backgroundPoints = new Actor("res/icono_puntos.png",
 		WIDTH * 0.85, HEIGHT * 0.05, 24, 24, game);
 
+	backgroundLive = new Actor("res/corazon.png",
+		WIDTH * 0.65, HEIGHT * 0.05, 24, 24, game);
 
 	projectiles.clear(); // Vaciar por si reiniciamos el juego
 
@@ -144,20 +150,33 @@ void GameLayer::update() {
 	for (auto const& projectile : projectiles) {
 		projectile->update();
 	}
+	
+	list<Enemy*> deleteEnemies;
+	list<Projectile*> deleteProjectiles;
 
-	// Colisiones
 	for (auto const& enemy : enemies) {
 		if (player->isOverlap(enemy)) {
-			init();
-			return; // Cortar el for
+			live--;
+			bool eInList = std::find(deleteEnemies.begin(),
+				deleteEnemies.end(),
+				enemy) != deleteEnemies.end();
+
+			if (!eInList) {
+				deleteEnemies.push_back(enemy);
+			}
+
+			playerLive->content = to_string(live);
+
+			if (live == 0) {
+				//Ya no tiene vida
+				init();
+				return;
+			}
 		}
 	}
 
 	// Colisiones , Enemy - Projectile
 
-	list<Enemy*> deleteEnemies;
-	list<Projectile*> deleteProjectiles;
-	
 	for (auto const& enemy : enemies) {
 		for (auto const& projectile : projectiles) {
 			if (enemy->isOverlap(projectile)) {
@@ -225,6 +244,9 @@ void GameLayer::draw() {
 
 	textPoints->draw();
 	backgroundPoints->draw();
+
+	playerLive->draw();
+	backgroundLive->draw();
 
 	SDL_RenderPresent(game->renderer); // Renderiza
 }
