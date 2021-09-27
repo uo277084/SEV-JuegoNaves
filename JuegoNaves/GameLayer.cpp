@@ -19,12 +19,13 @@ void GameLayer::init() {
 	backgroundPoints = new Actor("res/icono_puntos.png",
 		WIDTH * 0.85, HEIGHT * 0.05, 24, 24, game);
 
-
 	projectiles.clear(); // Vaciar por si reiniciamos el juego
 
 	enemies.clear(); // Vaciar por si reiniciamos el juego
 	enemies.push_back(new Enemy(300, 50, game));
 	enemies.push_back(new Enemy(300, 200, game));
+
+	monedas.clear();
 }
 
 void GameLayer::processControls() {
@@ -136,6 +137,15 @@ void GameLayer::update() {
 		newEnemyTime = 110;
 	}
 
+	//Generar moneda
+	newMonedaTime--;
+	if (newMonedaTime <= 0) {
+		int rx = (rand() % 300 ) + 100;
+		int ry = (rand() % (300 - 60)) + 1 + 60;
+		monedas.push_back(new Moneda(rx, ry, game));
+		newMonedaTime = 150;
+	}
+
 	player->update();
 	for (auto const& enemy : enemies) {
 		enemy->update();
@@ -150,6 +160,24 @@ void GameLayer::update() {
 		if (player->isOverlap(enemy)) {
 			init();
 			return; // Cortar el for
+		}
+	}
+
+	list<Moneda*> deleteMonedas;
+
+	for (auto const& moneda : monedas) {
+		if (player->isOverlap(moneda)) {
+
+			bool eInList = std::find(deleteMonedas.begin(),
+				deleteMonedas.end(),
+				moneda) != deleteMonedas.end();
+
+			if (!eInList) {
+				deleteMonedas.push_back(moneda);
+			}
+
+			points += 2;
+			textPoints->content = to_string(points);
 		}
 	}
 
@@ -187,6 +215,11 @@ void GameLayer::update() {
 	}
 	deleteEnemies.clear();
 
+	for (auto const& delMoneda : deleteMonedas) {
+		monedas.remove(delMoneda);
+	}
+	deleteMonedas.clear();
+
 	for (auto const& delProjectile : deleteProjectiles) {
 		projectiles.remove(delProjectile);
 	}
@@ -221,6 +254,10 @@ void GameLayer::draw() {
 
 	for (auto const& enemy : enemies) {
 		enemy->draw();
+	}
+
+	for (auto const& moneda : monedas) {
+		moneda->draw();
 	}
 
 	textPoints->draw();

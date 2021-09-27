@@ -7,7 +7,7 @@
 #include "Projectile.h"
 #include "Text.h"
 #include "Audio.h" 
-
+#include "Moneda.h"
 
 #include <list>
 
@@ -21,6 +21,7 @@ public:
 	void draw() override;
 	void keysToControls(SDL_Event event);
 	int newEnemyTime = 0;
+	int newMonedaTime = 0;
 
 	Player* player;
 	Background* background;
@@ -32,5 +33,6 @@ public:
 	int controlMoveY = 0;
 	int controlMoveX = 0;
 	list<Enemy*> enemies;
+	list<Moneda*> monedas;
 	list<Projectile*> projectiles;
 };
