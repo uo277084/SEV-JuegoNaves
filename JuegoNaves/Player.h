@@ -12,6 +12,9 @@ public:
 	void update();
 	void moveX(float axis);
 	void moveY(float axis);
+	int live;
+	void shooted();
+	int getLive();
 	Audio* audioShoot;
 	int shootCadence = 30;
 	int shootTime = 0;
