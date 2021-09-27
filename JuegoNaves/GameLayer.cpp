@@ -23,8 +23,11 @@ void GameLayer::init() {
 	projectiles.clear(); // Vaciar por si reiniciamos el juego
 
 	enemies.clear(); // Vaciar por si reiniciamos el juego
+	asteroids.clear();
 	enemies.push_back(new Enemy(300, 50, game));
 	enemies.push_back(new Enemy(300, 200, game));
+
+	asteroids.push_back(new Asteroid(325, 5, game));
 }
 
 void GameLayer::processControls() {
@@ -136,9 +139,22 @@ void GameLayer::update() {
 		newEnemyTime = 110;
 	}
 
+	//Generar asteroides
+	newAsteroidTime--;
+	if (newAsteroidTime <= 0) {
+		int rX = (rand() % (600 - 500)) + 1 + 500;
+		int rY = (rand() % (300 - 60)) + 1 + 60;
+		asteroids.push_back(new Asteroid(rX, rY, game));
+		newAsteroidTime = 150;
+	}
+
 	player->update();
 	for (auto const& enemy : enemies) {
 		enemy->update();
+	}
+
+	for (auto const& asteroid : asteroids) {
+		asteroid->update();
 	}
 
 	for (auto const& projectile : projectiles) {
@@ -153,9 +169,17 @@ void GameLayer::update() {
 		}
 	}
 
+	for (auto const& asteroid : asteroids) {
+		if (player->isOverlap(asteroid)) {
+			init();
+			return;
+		}
+	}
+
 	// Colisiones , Enemy - Projectile
 
 	list<Enemy*> deleteEnemies;
+	list<Asteroid*> deleteAsteroids;
 	list<Projectile*> deleteProjectiles;
 	
 	for (auto const& enemy : enemies) {
@@ -182,10 +206,39 @@ void GameLayer::update() {
 		}
 	}
 
+	for (auto const& asteroid : asteroids) {
+		for (auto const& projectile : projectiles) {
+			if (asteroid->isOverlap(projectile)) {
+				bool pInList = std::find(deleteProjectiles.begin(),
+					deleteProjectiles.end(),
+					projectile) != deleteProjectiles.end();
+
+				if (!pInList) {
+					deleteProjectiles.push_back(projectile);
+				}
+
+				bool eInList = std::find(deleteAsteroids.begin(),
+					deleteAsteroids.end(),
+					asteroid) != deleteAsteroids.end();
+
+				if (!eInList) {
+					deleteAsteroids.push_back(asteroid);
+				}
+				points++;
+				textPoints->content = to_string(points);
+			}
+		}
+	}
+
 	for (auto const& delEnemy : deleteEnemies) {
 		enemies.remove(delEnemy);
 	}
 	deleteEnemies.clear();
+
+	for (auto const& delAsteroid : deleteAsteroids) {
+		asteroids.remove(delAsteroid);
+	}
+	deleteAsteroids.clear();
 
 	for (auto const& delProjectile : deleteProjectiles) {
 		projectiles.remove(delProjectile);
@@ -206,8 +259,6 @@ void GameLayer::update() {
 			}
 		}
 	}
-	
-
 }
 
 void GameLayer::draw() {
@@ -221,6 +272,10 @@ void GameLayer::draw() {
 
 	for (auto const& enemy : enemies) {
 		enemy->draw();
+	}
+
+	for (auto const& asteroid : asteroids) {
+		asteroid->draw();
 	}
 
 	textPoints->draw();
