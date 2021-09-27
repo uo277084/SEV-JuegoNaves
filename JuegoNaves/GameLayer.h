@@ -7,7 +7,7 @@
 #include "Projectile.h"
 #include "Text.h"
 #include "Audio.h" 
-#include "Asteroid.h"
+
 
 #include <list>
 
@@ -21,18 +21,24 @@ public:
 	void draw() override;
 	void keysToControls(SDL_Event event);
 	int newEnemyTime = 0;
-	int newAsteroidTime = 0;
 
 	Player* player;
+	Player* player2;
 	Background* background;
 	Actor* backgroundPoints;
+	Actor* backgroundPoints2;
 	Audio* audioBackground;
 	Text* textPoints;
+	Text* textPoints2;
 	int points;
+	int points2;
 	bool controlShoot = false;
 	int controlMoveY = 0;
 	int controlMoveX = 0;
+	bool controlShoot2 = false;
+	int controlMoveY2 = 0;
+	int controlMoveX2 = 0;
 	list<Enemy*> enemies;
-	list<Asteroid*> asteroids;
 	list<Projectile*> projectiles;
+	list<Projectile*> projectiles2;
 };
