@@ -7,7 +7,7 @@
 #include "Projectile.h"
 #include "Text.h"
 #include "Audio.h" 
-
+#include "PowerUp.h"
 
 #include <list>
 
@@ -21,6 +21,12 @@ public:
 	void draw() override;
 	void keysToControls(SDL_Event event);
 	int newEnemyTime = 0;
+
+	int disparos = 5;
+	int newPowerUpTime = 100;
+	Actor* backgroundShoots;
+	Text* textShootsLeft;
+	list<PowerUp*> powerups;
 
 	Player* player;
 	Background* background;

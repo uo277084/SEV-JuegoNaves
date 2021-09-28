@@ -11,7 +11,7 @@ void GameLayer::init() {
 	audioBackground->play();
 
 	points = 0;
-	textPoints = new Text("0", WIDTH * 0.92, HEIGHT * 0.04, game);
+	textPoints = new Text("0", WIDTH * 0.92, HEIGHT * 0.05, game);
 	textPoints->content = to_string(points);
 
 	player = new Player(50, 50, game);
@@ -19,6 +19,11 @@ void GameLayer::init() {
 	backgroundPoints = new Actor("res/icono_puntos.png",
 		WIDTH * 0.85, HEIGHT * 0.05, 24, 24, game);
 
+	textShootsLeft = new Text("0", WIDTH * 0.75, HEIGHT * 0.05, game);
+	textShootsLeft->content = to_string(disparos);
+	backgroundShoots = new Actor("res/disparo_enemigo.png",
+		WIDTH * 0.68, HEIGHT * 0.05, 24, 24, game);
+	powerups.clear();
 
 	projectiles.clear(); // Vaciar por si reiniciamos el juego
 
@@ -35,10 +40,12 @@ void GameLayer::processControls() {
 	}
 	//procesar controles
 	// Disparar
-	if (controlShoot) {
+	if (controlShoot && disparos > 0) {
 		Projectile* newProjectile = player->shoot();
 		if (newProjectile != NULL) {
 			projectiles.push_back(newProjectile);
+			disparos--;
+			textShootsLeft->content = to_string(disparos);
 		}
 	}
 
@@ -136,6 +143,15 @@ void GameLayer::update() {
 		newEnemyTime = 110;
 	}
 
+	//Generar recarga de disparo
+	newPowerUpTime--;
+	if (newPowerUpTime <= 0) {
+		int rx = (rand() % 300) + 100;
+		int ry = (rand() % (300 - 60)) + 1 + 60;
+		powerups.push_back(new PowerUp(rx, ry, game));
+		newPowerUpTime = 200;
+	}
+
 	player->update();
 	for (auto const& enemy : enemies) {
 		enemy->update();
@@ -150,6 +166,25 @@ void GameLayer::update() {
 		if (player->isOverlap(enemy)) {
 			init();
 			return; // Cortar el for
+		}
+	}
+
+	//Colisión con recarga de disparos
+
+	list<PowerUp*> deletePowerUps;
+
+	for (auto const& powerup : powerups) {
+		if (player->isOverlap(powerup)) {
+			bool eInList = std::find(deletePowerUps.begin(),
+				deletePowerUps.end(),
+				powerup) != deletePowerUps.end();
+
+			if (!eInList) {
+				deletePowerUps.push_back(powerup);
+			}
+
+			disparos += 10;
+			textShootsLeft->content = to_string(disparos);
 		}
 	}
 
@@ -187,6 +222,11 @@ void GameLayer::update() {
 	}
 	deleteEnemies.clear();
 
+	for (auto const& delPowerUp : deletePowerUps) {
+		powerups.remove(delPowerUp);
+	}
+	deletePowerUps.clear();
+
 	for (auto const& delProjectile : deleteProjectiles) {
 		projectiles.remove(delProjectile);
 	}
@@ -223,8 +263,15 @@ void GameLayer::draw() {
 		enemy->draw();
 	}
 
+	for (auto const& powerup : powerups) {
+		powerup->draw();
+	}
+
 	textPoints->draw();
 	backgroundPoints->draw();
+
+	textShootsLeft->draw();
+	backgroundShoots->draw();
 
 	SDL_RenderPresent(game->renderer); // Renderiza
 }
